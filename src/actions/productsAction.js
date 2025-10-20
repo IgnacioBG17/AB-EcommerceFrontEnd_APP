@@ -28,7 +28,7 @@ export const getProductPagination = createAsyncThunk(
     "products/getProductPagination",
     async(params, { rejectWithValue }) => {
         try {
-            debugger
+            
             params = httpParams(params);
             const paramUrl = new URLSearchParams(params).toString();
 

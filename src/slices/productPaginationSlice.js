@@ -40,6 +40,9 @@ export const productPaginationSlice = createSlice({
       state.category = null;
       state.rating = null;
     },
+    updateCategory: (state, action) => {
+      state.category = action.payload.category;
+    },
     updateRating: (state, action) => {
       state.rating = action.payload.rating;
     },
