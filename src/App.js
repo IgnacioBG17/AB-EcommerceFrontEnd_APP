@@ -3,6 +3,7 @@ import "./App.css";
 import Home from "./components/Home";
 import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
+import ProductDetail from "./components/product/ProductDetail";
 
 function App() {
   return (
@@ -11,8 +12,9 @@ function App() {
         <Header />
         <div className="container container-fluid">
           <Routes>
-          	<Route path="/" element={<Home />} />
-		  </Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+          </Routes>
         </div>
         <Footer />
       </div>
