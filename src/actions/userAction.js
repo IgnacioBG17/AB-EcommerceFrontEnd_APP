@@ -81,7 +81,7 @@ export const loadUser = createAsyncThunk(
   "user/getUser",
   async ({ rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api.v1/usuario`);
+      const { data } = await axios.get(`/api/v1/usuario`);
       localStorage.setItem("token", data.token);
       return data;
     } catch (err) {
