@@ -29,6 +29,7 @@ export const login = createAsyncThunk(
 export const register = createAsyncThunk(
   "user/register",
   async (params, { rejectWithValue }) => {
+    debugger
     try {
       const requestConfig = {
         headers: {
@@ -41,7 +42,7 @@ export const register = createAsyncThunk(
         params,
         requestConfig
       );
-
+      debugger
       localStorage.setItem("token", data.token);
       return data;
     } catch (err) {
