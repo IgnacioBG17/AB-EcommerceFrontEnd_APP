@@ -1,0 +1,84 @@
+import { createSlice } from "@reduxjs/toolkit";
+import { addItemShoppingCart, getShoppingCart, removeItemShoppingCart } from "../actions/cartAction";
+
+const initialState = {
+  shoppingCartId: "",
+  shoppingCartItems: [],
+  total: 0,
+  cantidad: 0,
+  subTotal: 0,
+  impuesto: 0,
+  precioEnvio: 0,
+  loading: false,
+  error: null,
+};
+
+export const cartSlice = createSlice({
+  name: "cartItems",
+  initialState,
+  extraReducers: {
+    /** getShoppingCart */
+    [getShoppingCart.pending]: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    [getShoppingCart.fulfilled]: (state, { payload }) => {
+      localStorage.setItem("shoppingCartId", payload.shoppingCartId);
+      state.shoppingCartId = payload.shoppingCartId;
+      state.shoppingCartItems = payload.shoppingCartItems;
+      state.total = payload.total;
+      state.cantidad = payload.cantidad;
+      state.subTotal = payload.subTotal;
+      state.impuesto = payload.impuesto;
+      state.precioEnvio = payload.precioEnvio;
+      state.loading = false;
+      state.error = null;
+    },
+    [getShoppingCart.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    /** addItemShoppingCart */
+    [addItemShoppingCart.pending]: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    [addItemShoppingCart.fulfilled]: (state, { payload }) => {
+      state.shoppingCartId = payload.shoppingCartId;
+      state.shoppingCartItems = payload.shoppingCartItems;
+      state.total = payload.total;
+      state.cantidad = payload.cantidad;
+      state.subTotal = payload.subTotal;
+      state.impuesto = payload.impuesto;
+      state.precioEnvio = payload.precioEnvio;
+      state.loading = false;
+      state.error = null;
+    },
+    [addItemShoppingCart.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    /**removeItemShoppingCart */
+    [removeItemShoppingCart.pending]: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    [removeItemShoppingCart.fulfilled]: (state, { payload }) => {
+      state.shoppingCartId = payload.shoppingCartId;
+      state.shoppingCartItems = payload.shoppingCartItems;
+      state.total = payload.total;
+      state.cantidad = payload.cantidad;
+      state.subTotal = payload.subTotal;
+      state.impuesto = payload.impuesto;
+      state.precioEnvio = payload.precioEnvio;
+      state.loading = false;
+      state.error = null;
+    },
+    [removeItemShoppingCart.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+  },
+});
+
+export const cartReducer = cartSlice.reducer;

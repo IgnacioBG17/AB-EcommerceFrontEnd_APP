@@ -41,7 +41,7 @@ const Register = () => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-debugger
+
     const formData = new FormData();
     formData.set("nombre", nombre);
     formData.set("apellido", apellido);
