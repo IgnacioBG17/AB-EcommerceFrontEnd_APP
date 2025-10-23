@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   const { user, loading } = useSelector((state) => state.security);
+  const { shoppingCartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const alert = useAlert();
 
@@ -21,7 +22,9 @@ const Header = () => {
       <nav className="navbar row">
         <div className="col-12 col-md-3">
           <div className="navbar-brand">
-            <img src="/images/logo_zindora.png" alt="Logo" />
+            <Link to="/">
+              <img src="/images/logo_zindora.png" alt="Logo" />
+            </Link>
           </div>
         </div>
 
@@ -30,17 +33,17 @@ const Header = () => {
         </div>
 
         <div className="col-12 col-md-3 mt-4 mt-md-0 text-center">
-          <span id="cart" className="ml-3">
-            Cart
-          </span>
-          <span className="ml-1" id="cart_count">
-            2
-          </span>
+          <Link to="/cart">
+            <span id="cart" className="ml-3">
+              Cart
+            </span>
+            <span className="ml-1" id="cart_count">
+              {shoppingCartItems.length}
+            </span>
+          </Link>
 
           {/* Dropdown usuario */}
-          {
-          user ? 
-          (
+          {user ? (
             <div className="ml-4 dropdown d-inline">
               <Link
                 to="#!"
@@ -83,17 +86,14 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-          ) : 
-          (
+          ) : (
             /* Botón login */
-            !loading &&
-            (
-            <Link className="btn ml-4" id="login_btn" to="/login">
-              Login
-            </Link>
+            !loading && (
+              <Link className="btn ml-4" id="login_btn" to="/login">
+                Login
+              </Link>
             )
-          )
-        }
+          )}
         </div>
       </nav>
     </Fragment>
