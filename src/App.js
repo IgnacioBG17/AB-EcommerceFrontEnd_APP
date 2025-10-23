@@ -7,13 +7,28 @@ import ProductDetail from "./components/product/ProductDetail";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { getCategories } from "./actions/categoryAction";
+import Login from "./components/security/Login";
+import Register from "./components/security/Register";
+import Profile from "./components/security/Profile";
+import ProtectedRoute from "./components/route/ProtectedRoute";
+import { loadUser } from "./actions/userAction";
+import UpdateProfile from "./components/security/UpdateProfile";
+import ForgotPassword from "./components/security/ForgotPassword";
+import NewPassword from "./components/security/NewPassword";
+import UpdatePassword from "./components/security/UpdatePassword";
 
 function App() {
 
   const dispatch = useDispatch();
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
-    dispatch(getCategories());
-  }, [dispatch])
+    dispatch(getCategories({}));
+
+    if (token) {
+      dispatch(loadUser({}));
+    }
+  }, [dispatch, token])
 
   return (
     <Router>
@@ -23,6 +38,23 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/password/forgot" element={<ForgotPassword />} />
+            <Route path="/password/reset/:token" element={<NewPassword />} />
+
+            <Route exact path="/me" element={<ProtectedRoute />}>
+              <Route path="/me" element={<Profile />} />
+            </Route>
+
+            <Route exact path="/me/update" element={<ProtectedRoute />}>
+              <Route path="/me/update" element={<UpdateProfile />} />
+            </Route>
+
+            <Route exact path="/password/update" element={<UpdatePassword />}>
+              <Route path="/password/update" element={<UpdatePassword />} />
+            </Route>
+            
           </Routes>
         </div>
         <Footer />
