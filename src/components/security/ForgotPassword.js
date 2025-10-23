@@ -9,23 +9,25 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const alert = useAlert();
   const dispatch = useDispatch();
-  const {errores, message, loading} = useSelector(state => state.forgotpassword);
+  const { errores, message, loading } = useSelector(
+    (state) => state.forgotPassword
+  );
 
   useEffect(() => {
     if (errores) {
-        errores.map(error => alert.error(error));
-        dispatch(resetError());
+      errores.map((error) => alert.error(error));
+      dispatch(resetError());
     }
 
     if (message) {
-        alert.success(message);
+      alert.success(message);
     }
-  }, [dispatch, alert, errores, message])
+  }, [dispatch, alert, errores, message]);
 
   const submitHandler = (e) => {
     e.preventDefault();
     dispatch(forgotSendPassword({ email }));
-  }
+  };
 
   return (
     <Fragment>
@@ -41,7 +43,7 @@ const ForgotPassword = () => {
                 id="email_field"
                 className="form-control"
                 value={email}
-                onChange={ (e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 

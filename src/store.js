@@ -14,8 +14,8 @@ export default configureStore({
         productPagination: productPaginationReducer,
         category: categoryReducer,
         security: securityReducer,
-        forgotpassword: forgotPasswordReducer,
-        resetPassword: resetPasswordReducer
+        forgotPassword: forgotPasswordReducer,
+        resetPassword: resetPasswordReducer,
     },
     middleware: (GetDefaultMiddleware) => GetDefaultMiddleware({serializableCheck: false})
 })
