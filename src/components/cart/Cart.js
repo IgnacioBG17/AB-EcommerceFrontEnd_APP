@@ -2,7 +2,10 @@ import React, { Fragment } from "react";
 import MetaData from "../layout/MetaData";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { addItemShoppingCart, removeItemShoppingCart } from "../../actions/cartAction";
+import {
+  addItemShoppingCart,
+  removeItemShoppingCart,
+} from "../../actions/cartAction";
 
 const Cart = () => {
   const { shoppingCartItems, shoppingCartId, total, cantidad } = useSelector(
@@ -51,15 +54,23 @@ const Cart = () => {
 
   const removeCartItemHandler = (item) => {
     const request = {
-        id: item.id
-    }
+      id: item.id,
+    };
 
     dispatch(removeItemShoppingCart(request));
   };
 
+  const checkOutHandler = () => {
+    if (isAuthenticated) {
+      navigate("/shipping");
+    }else{
+      navigate("/login?redirect=shipping");
+    }
+  }
+
   return (
     <Fragment>
-      <MetaData title={"Tu Carrito de Compras"} />
+      <MetaData titulo={"Tu Carrito de Compras"} />
       {shoppingCartItems.length === 0 ? (
         <h2 className="mt-5">Tu carrito de compras esta vacio</h2>
       ) : (
@@ -148,7 +159,7 @@ const Cart = () => {
                 </p>
 
                 <hr />
-                <button id="checkout_btn" className="btn btn-primary btn-block">
+                <button id="checkout_btn" className="btn btn-primary btn-block" onClick={checkOutHandler}>
                   Check out
                 </button>
               </div>
