@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { addItemShoppingCart, getShoppingCart, removeItemShoppingCart } from "../actions/cartAction";
+import {
+  addItemShoppingCart,
+  getShoppingCart,
+  removeItemShoppingCart,
+} from "../actions/cartAction";
+import { confirmPayment } from "../actions/orderAction";
 
 const initialState = {
   shoppingCartId: "",
@@ -75,6 +80,24 @@ export const cartSlice = createSlice({
       state.error = null;
     },
     [removeItemShoppingCart.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    [confirmPayment.pending]: (state, { payload }) => {
+      state.loading = true;
+      state.error = null;
+    },
+    [confirmPayment.fulfilled]: (state, { payload }) => {
+      state.shoppingCartItems = [];
+      state.total = 0;
+      state.cantidad = 0;
+      state.subTotal = 0;
+      state.impuesto = 0;
+      state.precioEnvio = 0;
+      state.loading = false;
+      state.error = null;
+    },
+    [confirmPayment.rejected]: (state, action) => {
       state.loading = false;
       state.error = action.payload;
     },

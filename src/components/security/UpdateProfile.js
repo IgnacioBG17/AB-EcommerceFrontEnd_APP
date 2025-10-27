@@ -73,7 +73,7 @@ const UpdateProfile = () => {
 
   return (
     <Fragment>
-      <MetaData title={"Actualizar Perfil"} />
+      <MetaData titulo={"Actualizar Perfil"} />
       <div className="row wrapper">
         <div className="col-10 col-lg-5">
           <form
