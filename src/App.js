@@ -5,7 +5,7 @@ import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
 import ProductDetail from "./components/product/ProductDetail";
 import { useDispatch } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getCategories } from "./actions/categoryAction";
 import Login from "./components/security/Login";
 import Register from "./components/security/Register";
@@ -23,11 +23,12 @@ import Shipping from "./components/cart/Shipping";
 import ConfirmOrder from "./components/cart/ConfirmOrder";
 import Wrapper from "./components/cart/Payment";
 import OrderSuccess from "./components/cart/OrderSuccess";
+import { useTheme } from "./hooks/useTheme";
 
 function App() {
-
   const dispatch = useDispatch();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     dispatch(getCategories({}));
@@ -37,12 +38,12 @@ function App() {
     if (token) {
       dispatch(loadUser({}));
     }
-  }, [dispatch, token])
+  }, [dispatch, token]);
 
   return (
     <Router>
       <div className="App">
-        <Header />
+        <Header onToggleTheme={toggleTheme} currentTheme={theme} />
         <div className="container container-fluid">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -64,7 +65,7 @@ function App() {
             <Route exact path="/password/update" element={<UpdatePassword />}>
               <Route path="/password/update" element={<UpdatePassword />} />
             </Route>
-            
+
             <Route exact path="/shipping" element={<Shipping />}>
               <Route path="/shipping" element={<Shipping />} />
             </Route>
@@ -80,7 +81,6 @@ function App() {
             <Route exact path="/success" element={<OrderSuccess />}>
               <Route path="/success" element={<OrderSuccess />} />
             </Route>
-            
           </Routes>
         </div>
         <Footer />

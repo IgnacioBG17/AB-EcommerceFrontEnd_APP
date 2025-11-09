@@ -6,7 +6,7 @@ import { useAlert } from "react-alert";
 import { logout } from "../../slices/securitySlice";
 import { Link } from "react-router-dom";
 
-const Header = () => {
+const Header = ({ onToggleTheme, currentTheme }) => {
   const { user, loading } = useSelector((state) => state.security);
   const { shoppingCartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
@@ -32,7 +32,24 @@ const Header = () => {
           <Search />
         </div>
 
-        <div className="col-12 col-md-3 mt-4 mt-md-0 text-center">
+        <div className="col-12 col-md-3 mt-4 mt-md-0 text-center d-flex align-items-center justify-content-center justify-content-md-end theme-actions">
+          <button
+            type="button"
+            className="btn btn-lg"
+            onClick={onToggleTheme}
+            aria-label={
+              currentTheme === "dark"
+                ? "Cambiar a tema claro"
+                : "Cambiar a tema oscuro"
+            }
+            title={
+              currentTheme === "dark"
+                ? "Cambiar a tema claro"
+                : "Cambiar a tema oscuro"
+            }
+          >
+            {currentTheme === "dark" ? "☀️" : "🌙"}
+          </button>
           <Link to="/cart">
             <span id="cart" className="ml-3">
               Cart

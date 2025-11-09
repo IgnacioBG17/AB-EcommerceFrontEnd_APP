@@ -6,6 +6,7 @@ import { resetUpdateStatus } from "../../slices/securitySlice";
 import { useAlert } from "react-alert";
 import { saveAddressInfo } from "../../actions/cartAction";
 import {CheckoutSteps} from "./CheckoutSteps";
+import { useCountries } from "../../hooks/useCountries";
 
 const Shipping = () => {
   const alert = useAlert();
@@ -14,7 +15,8 @@ const Shipping = () => {
   const { direccionEnvio, isUpdated, errores, loading } = useSelector(
     (state) => state.security
   );
-  const { countries } = useSelector((state) => state.country);
+
+  const { countries }  = useCountries();
 
   const [direccion, setDireccion] = useState(direccionEnvio ? direccionEnvio.direccion : "");
   const [ciudad, setCiudad] = useState(direccionEnvio ? direccionEnvio.ciudad : "");
@@ -27,13 +29,12 @@ const Shipping = () => {
         //navegar hacia la pasarela de pagos
         navigate("/order/confirm");
         dispatch(resetUpdateStatus({}))
-        //alert.success("Se almacenó la dirección de envío.");
     }
 
-    if (errores) {
-        errores.map(error => alert.error(error));
+    if (errores && errores.length > 0) {
+        errores.forEach((error) => alert.error(error));
     }
-  }, [dispatch, errores, alert, isUpdated]);
+  }, [dispatch, errores, alert, , navigate]);
 
   const submitHandler = (e) => {
     e.preventDefault();
