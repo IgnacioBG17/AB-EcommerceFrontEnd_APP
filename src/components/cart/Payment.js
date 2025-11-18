@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import MetaData from "../layout/MetaData";
 import { CheckoutSteps } from "./CheckoutSteps";
 import { useNavigate } from "react-router-dom";
@@ -15,22 +15,11 @@ import {
 import { confirmPayment } from "../../actions/orderAction";
 import { loadStripe } from "@stripe/stripe-js";
 
-const options = {
-  style: {
-    base: {
-      fontSize: "16px",
-    },
-    invalid: {
-      color: "#9e2146",
-    },
-  },
-};
-
 const Wrapper = (props) => (
   <Elements stripe={loadStripe(localStorage.getItem("stripeapi"))}>
     <Payment {...props} />
   </Elements>
-)
+);
 
 const Payment = (props) => {
   const navigate = useNavigate();
@@ -38,6 +27,52 @@ const Payment = (props) => {
   const alert = useAlert();
   const stripe = useStripe();
   const elements = useElements();
+
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+
+  useEffect(() => {
+    // Escucha cambios en localStorage (por ejemplo, cuando el usuario cambia el tema)
+    const handleStorageChange = () => {
+      setTheme(localStorage.getItem("theme") || "light");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Escucha cambios por clase en <body> (por si el cambio no actualiza localStorage)
+    const observer = new MutationObserver(() => {
+      const currentTheme = document.body.classList.contains("dark-theme")
+        ? "dark"
+        : "light";
+      setTheme(currentTheme);
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      observer.disconnect();
+    };
+  }, []);
+
+  // Aplica los estilos dinámicos de Stripe según el tema actual
+  const options = {
+    style: {
+      base: {
+        fontSize: "16px",
+        color: theme === "dark" ? "#ffffff" : "#000000",
+        backgroundColor: theme === "dark" ? "#111827" : "#ffffff",
+        "::placeholder": {
+          color: theme === "dark" ? "#9ca3af" : "#888888",
+        },
+      },
+      invalid: {
+        color: "#ff6b6b",
+      },
+    },
+  };
 
   const { user } = useSelector((state) => state.security);
   const { stripeApiKey, clientSecret, order } = useSelector(
@@ -83,7 +118,7 @@ const Payment = (props) => {
         }
       }
     } catch (error) {
-      alert.error(error?.response?.data?.message || "Error en el pago")
+      alert.error(error?.response?.data?.message || "Error en el pago");
       setIsProcessing(false);
     }
   };
@@ -126,11 +161,11 @@ const Payment = (props) => {
               />
             </div>
 
-            <button 
-                id="pay_btn" 
-                type="submit" 
-                className="btn btn-block py-3"
-                disabled={isProcessing}
+            <button
+              id="pay_btn"
+              type="submit"
+              className="btn btn-block py-3"
+              disabled={isProcessing}
             >
               {isProcessing ? "Procesando..." : "Pagar"}
             </button>
