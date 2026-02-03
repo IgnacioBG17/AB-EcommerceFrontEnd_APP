@@ -21,6 +21,17 @@ const initialState = {
 export const cartSlice = createSlice({
   name: "cartItems",
   initialState,
+  reducers:{
+  clearCart(state) {
+      state.shoppingCartItems = [];
+      state.total = 0;
+      state.cantidad = 0;
+      state.subTotal = 0;
+      state.impuesto = 0;
+      state.precioEnvio = 0;
+      state.error = null;
+    }
+  },
   extraReducers: {
     /** getShoppingCart */
     [getShoppingCart.pending]: (state) => {
@@ -83,25 +94,28 @@ export const cartSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    [confirmPayment.pending]: (state, { payload }) => {
-      state.loading = true;
-      state.error = null;
-    },
-    [confirmPayment.fulfilled]: (state, { payload }) => {
-      state.shoppingCartItems = [];
-      state.total = 0;
-      state.cantidad = 0;
-      state.subTotal = 0;
-      state.impuesto = 0;
-      state.precioEnvio = 0;
-      state.loading = false;
-      state.error = null;
-    },
-    [confirmPayment.rejected]: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
+    /** Se comenta porque ya se completa el pago pormedio de webhook y se limpia el carrito por medio de clearCart */
+    // [confirmPayment.pending]: (state, { payload }) => {
+    //   state.loading = true;
+    //   state.error = null;
+    // },
+    // [confirmPayment.fulfilled]: (state, { payload }) => {
+    //   state.shoppingCartItems = [];
+    //   state.total = 0;
+    //   state.cantidad = 0;
+    //   state.subTotal = 0;
+    //   state.impuesto = 0;
+    //   state.precioEnvio = 0;
+    //   state.loading = false;
+    //   state.error = null;
+    // },
+    // [confirmPayment.rejected]: (state, action) => {
+    //   state.loading = false;
+    //   state.error = action.payload;
+    // },
+    
   },
 });
 
+export const { clearCart } = cartSlice.actions;
 export const cartReducer = cartSlice.reducer;

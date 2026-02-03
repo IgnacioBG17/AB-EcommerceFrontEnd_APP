@@ -3,6 +3,7 @@ import MetaData from "../layout/MetaData";
 import { CheckoutSteps } from "./CheckoutSteps";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { clearCart } from '../../slices/cartSlice';
 import { useAlert } from "react-alert";
 import {
   CardCvcElement,
@@ -107,10 +108,11 @@ const Payment = (props) => {
         if (result.paymentIntent.status === "succeeded") {
           const params = {
             orderId: order.id,
-            shoppingCartId: shoppingCartId,
+            shoppingCartMasterId: shoppingCartId,
           };
 
-          dispatch(confirmPayment(params));
+          //dispatch(confirmPayment(params));
+          dispatch(clearCart());
           navigate("/success");
         } else {
           alert.error("Errores en el procesamiento del pago");
