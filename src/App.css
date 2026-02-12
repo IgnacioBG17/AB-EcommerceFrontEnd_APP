@@ -817,3 +817,67 @@ ul.CTAs a {
   font-size: 0.8rem;
   color: grey;
 }
+/* Admin Dashboard Landing */
+.admin-dashboard-page {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1rem;
+  min-height: 72vh;
+  margin-top: 1rem;
+}
+
+.admin-sidebar-panel {
+  background: #232f3e;
+  color: #fff;
+  border-radius: 0.3rem;
+  padding: 1.25rem 1rem;
+}
+
+.admin-sidebar-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-sidebar-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-sidebar-links li {
+  margin-bottom: 0.35rem;
+}
+
+.admin-sidebar-links a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: #fff;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.2rem;
+  transition: background-color 0.2s ease;
+}
+
+.admin-sidebar-links a:hover {
+  background-color: #fff;
+  color: #232f3e;
+}
+
+.admin-dashboard-content {
+  background-color: var(--surface-background-color);
+  border: 1px solid var(--surface-border-color);
+  color: var(--surface-text-color);
+  border-radius: 0.3rem;
+  padding: 1.5rem;
+}
+
+.admin-dashboard-content h1 {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 991px) {
+  .admin-dashboard-page {
+    grid-template-columns: 1fr;
+  }
+}

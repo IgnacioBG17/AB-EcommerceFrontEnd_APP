@@ -5,7 +5,7 @@ import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
 import ProductDetail from "./components/product/ProductDetail";
 import { useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getCategories } from "./actions/categoryAction";
 import Login from "./components/security/Login";
 import Register from "./components/security/Register";
@@ -24,6 +24,7 @@ import ConfirmOrder from "./components/cart/ConfirmOrder";
 import Wrapper from "./components/cart/Payment";
 import OrderSuccess from "./components/cart/OrderSuccess";
 import { useTheme } from "./hooks/useTheme";
+import Dashboard from "./components/admin/Dashboard";
 
 function App() {
   const dispatch = useDispatch();
@@ -80,6 +81,10 @@ function App() {
 
             <Route exact path="/success" element={<OrderSuccess />}>
               <Route path="/success" element={<OrderSuccess />} />
+            </Route>
+
+            <Route exact path="/dashboard" element={<ProtectedRoute existsRoles={["ADMIN"]} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
             </Route>
           </Routes>
         </div>
