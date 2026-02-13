@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import Home from "./components/Home";
 import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
 import ProductDetail from "./components/product/ProductDetail";
 import { useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getCategories } from "./actions/categoryAction";
 import Login from "./components/security/Login";
 import Register from "./components/security/Register";
@@ -24,6 +24,59 @@ import ConfirmOrder from "./components/cart/ConfirmOrder";
 import Wrapper from "./components/cart/Payment";
 import OrderSuccess from "./components/cart/OrderSuccess";
 import { useTheme } from "./hooks/useTheme";
+import Dashboard from "./components/dashboard/Dashboard";
+
+const AppLayout = ({ toggleTheme, theme }) => {
+  const location = useLocation();
+  const isDashboardRoute = location.pathname === "/dashboard";
+
+  return (
+    <div className="App">
+      <Header onToggleTheme={toggleTheme} currentTheme={theme} />
+      <div className={isDashboardRoute ? "container-fluid dashboard-container" : "container container-fluid"}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/password/forgot" element={<ForgotPassword />} />
+          <Route path="/password/reset/:token" element={<NewPassword />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          <Route exact path="/me" element={<ProtectedRoute />}>
+            <Route path="/me" element={<Profile />} />
+          </Route>
+
+          <Route exact path="/me/update" element={<ProtectedRoute />}>
+            <Route path="/me/update" element={<UpdateProfile />} />
+          </Route>
+
+          <Route exact path="/password/update" element={<UpdatePassword />}>
+            <Route path="/password/update" element={<UpdatePassword />} />
+          </Route>
+
+          <Route exact path="/shipping" element={<Shipping />}>
+            <Route path="/shipping" element={<Shipping />} />
+          </Route>
+
+          <Route exact path="/order/confirm" element={<ConfirmOrder />}>
+            <Route path="/order/confirm" element={<ConfirmOrder />} />
+          </Route>
+
+          <Route exact path="/payment" element={<Wrapper />}>
+            <Route path="/payment" element={<Wrapper />} />
+          </Route>
+
+          <Route exact path="/success" element={<OrderSuccess />}>
+            <Route path="/success" element={<OrderSuccess />} />
+          </Route>
+        </Routes>
+      </div>
+      <Footer className={isDashboardRoute ? "footer-dashboard" : ""} />
+    </div>
+  );
+};
 
 function App() {
   const dispatch = useDispatch();
@@ -42,49 +95,7 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        <Header onToggleTheme={toggleTheme} currentTheme={theme} />
-        <div className="container container-fluid">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/password/forgot" element={<ForgotPassword />} />
-            <Route path="/password/reset/:token" element={<NewPassword />} />
-
-            <Route exact path="/me" element={<ProtectedRoute />}>
-              <Route path="/me" element={<Profile />} />
-            </Route>
-
-            <Route exact path="/me/update" element={<ProtectedRoute />}>
-              <Route path="/me/update" element={<UpdateProfile />} />
-            </Route>
-
-            <Route exact path="/password/update" element={<UpdatePassword />}>
-              <Route path="/password/update" element={<UpdatePassword />} />
-            </Route>
-
-            <Route exact path="/shipping" element={<Shipping />}>
-              <Route path="/shipping" element={<Shipping />} />
-            </Route>
-
-            <Route exact path="/order/confirm" element={<ConfirmOrder />}>
-              <Route path="/order/confirm" element={<ConfirmOrder />} />
-            </Route>
-
-            <Route exact path="/payment" element={<Wrapper />}>
-              <Route path="/payment" element={<Wrapper />} />
-            </Route>
-
-            <Route exact path="/success" element={<OrderSuccess />}>
-              <Route path="/success" element={<OrderSuccess />} />
-            </Route>
-          </Routes>
-        </div>
-        <Footer />
-      </div>
+      <AppLayout toggleTheme={toggleTheme} theme={theme} />
     </Router>
   );
 }

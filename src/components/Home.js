@@ -1,11 +1,11 @@
 import React, {Fragment, useEffect, useState } from "react";
 import MetaData from "./layout/MetaData";
 import { useDispatch, useSelector } from "react-redux";
-import { getProductPagination, getProducts } from "../actions/productsAction";
+import { getProductPagination } from "../actions/productsAction";
 import { useAlert } from "react-alert";
 import Products  from "./products/Products";
 import Pagination from "react-js-pagination";
-import { setPageIndex, updateCategory, updatePrecio, updateRating } from "../slices/productPaginationSlice";
+import { setPageIndex, updateCategory, updatePrecio, updateRating } from "../slices/productMaintenanceSlice";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
@@ -33,7 +33,7 @@ const Home = () => {
     precioMin,
     category,
     rating,
-  } = useSelector((state) => state.productPagination);
+  } = useSelector((state) => state.product);
   
   const alert = useAlert();
 

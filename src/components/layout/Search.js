@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { searchPagination, resetPagination } from '../../slices/productPaginationSlice';
+import { searchPagination, resetPagination } from '../../slices/productMaintenanceSlice';
 
 const Search = () => {
 

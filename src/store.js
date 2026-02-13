@@ -1,7 +1,4 @@
 import {configureStore} from "@reduxjs/toolkit";
-import { productsReducer } from "./slices/productsSlice";
-import { productByIdReducer } from "./slices/productByIdSlice";
-import { productPaginationReducer } from "./slices/productPaginationSlice";
 import { categoryReducer } from "./slices/categorySlice";
 import { securityReducer } from "./slices/securitySlice";
 import { forgotPasswordReducer } from "./slices/forgotPasswordSlice";
@@ -9,19 +6,20 @@ import { resetPasswordReducer } from "./slices/resetPasswordSlice";
 import { cartReducer } from "./slices/cartSlice";
 import { contryReducer } from "./slices/countrySlice";
 import { orderReducer } from "./slices/orderSlice";
+import { productMaintenanceReducer } from "./slices/productMaintenanceSlice";
+import { reviewMaintenanceReducer } from "./slices/reviewMaintenanceSlice";
 
 export default configureStore({
     reducer:{
-        products: productsReducer,
-        product: productByIdReducer,
-        productPagination: productPaginationReducer,
+        product: productMaintenanceReducer,
         category: categoryReducer,
         security: securityReducer,
         forgotPassword: forgotPasswordReducer,
         resetPassword: resetPasswordReducer,
         cart: cartReducer,
         country: contryReducer,
-        order: orderReducer
+        order: orderReducer,
+        reviewMaintenance: reviewMaintenanceReducer
     },
     middleware: (GetDefaultMiddleware) => GetDefaultMiddleware({serializableCheck: false})
 })

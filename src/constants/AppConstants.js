@@ -6,7 +6,8 @@ const prod = {
 
 const dev = {
     url:{
-        API_URL:'http://localhost:5000'
+        //API_URL:'http://localhost:5000'
+        API_URL:'https://spiroid-karlie-unregularised.ngrok-free.dev'
     }
 }
 
