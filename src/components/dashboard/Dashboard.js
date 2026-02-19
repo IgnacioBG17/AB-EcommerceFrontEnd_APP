@@ -8,6 +8,12 @@ import {
   updateStatusProduct,
 } from "../../actions/productsAction";
 import { deleteReview, getPaginationReviews } from "../../actions/reviewAction";
+import {
+  getPaginationUsersAdmin,
+  getRolesList,
+  updateAdminStatusUser,
+  updateAdminUser,
+} from "../../actions/userAction";
 
 const sectionOptions = ["Dashboard", "Products", "Ordenes", "Usuarios", "Reviews"];
 
@@ -23,6 +29,13 @@ const initialProductData = {
   imageUrls: [],
 };
 
+const initialUserData = {
+  id: "",
+  nombre: "",
+  apellido: "",
+  telefono: "",
+  role: "",
+};
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("Dashboard");
@@ -31,6 +44,10 @@ const Dashboard = () => {
   const [pageIndex, setPageIndex] = useState(1);
 
   const [reviewPageIndex, setReviewPageIndex] = useState(1);
+
+  const [userPageIndex, setUserPageIndex] = useState(1);
+  const [userSearch, setUserSearch] = useState("");
+  const [userData, setUserData] = useState(initialUserData);
 
   const dispatch = useDispatch();
   const alert = useAlert();
@@ -46,8 +63,16 @@ const Dashboard = () => {
     reviews,
     count: reviewTotalItems,
   } = useSelector((state) => state.reviewMaintenance);
+  const {
+    loading: loadingUsers,
+    submitting: submittingUsers,
+    users,
+    count: userTotalItems,
+    roles,
+  } = useSelector((state) => state.userMaintenance);
 
   const isEditing = useMemo(() => Boolean(productData.id), [productData.id]);
+  const isEditingUser = useMemo(() => Boolean(userData.id), [userData.id]);
 
   const fetchAdminProducts = useCallback(async () => {
     try {
@@ -67,6 +92,28 @@ const Dashboard = () => {
     }
   }, [alert, dispatch, reviewPageIndex]);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      await dispatch(
+        getPaginationUsersAdmin({
+          pageIndex: userPageIndex,
+          pageSize: 8,
+          search: userSearch?.trim() || null,
+        })
+      ).unwrap();
+    } catch (error) {
+      alert.error(error || "No se pudo cargar el listado de usuarios");
+    }
+  }, [alert, dispatch, userPageIndex, userSearch]);
+
+  const fetchRoles = useCallback(async () => {
+    try {
+      await dispatch(getRolesList()).unwrap();
+    } catch (error) {
+      alert.error(error || "No se pudo cargar el listado de roles");
+    }
+  }, [alert, dispatch]);
+
   useEffect(() => {
     if (activeSection === "Products") {
       fetchAdminProducts();
@@ -74,7 +121,11 @@ const Dashboard = () => {
     if (activeSection === "Reviews") {
       fetchReviews();
     }
-  }, [activeSection, fetchAdminProducts, fetchReviews]);
+    if (activeSection === "Usuarios") {
+      fetchUsers();
+      fetchRoles();
+    }
+  }, [activeSection, fetchAdminProducts, fetchReviews, fetchUsers, fetchRoles]);
 
   const onProductFieldChange = (event) => {
     const { name, value, files } = event.target;
@@ -87,6 +138,10 @@ const Dashboard = () => {
     setProductData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const onUserFieldChange = (event) => {
+    const { name, value } = event.target;
+    setUserData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const buildProductFormData = () => {
     const formData = new FormData();
@@ -126,6 +181,10 @@ const Dashboard = () => {
     setProductData(initialProductData);
   };
 
+  const resetUserForm = () => {
+    setUserData(initialUserData);
+  };
+
   const submitProductHandler = async (event) => {
     event.preventDefault();
 
@@ -150,6 +209,33 @@ const Dashboard = () => {
     }
   };
 
+  const submitUserHandler = async (event) => {
+    event.preventDefault();
+
+    if (!isEditingUser) {
+      alert.error("Selecciona un usuario del listado para editar.");
+      return;
+    }
+
+    try {
+      await dispatch(
+        updateAdminUser({
+          id: userData.id,
+          nombre: userData.nombre,
+          apellido: userData.apellido,
+          telefono: userData.telefono,
+          role: userData.role,
+        })
+      ).unwrap();
+
+      alert.success("Usuario actualizado correctamente");
+      resetUserForm();
+      fetchUsers();
+    } catch (error) {
+      alert.error(error || "No se pudo actualizar el usuario");
+    }
+  };
+
   const editProduct = (product) => {
     setProductData({
       id: product.id,
@@ -167,6 +253,16 @@ const Dashboard = () => {
     });
   };
 
+  const editUser = (user) => {
+    setUserData({
+      id: user.id || "",
+      nombre: user.nombre || "",
+      apellido: user.apellido || "",
+      telefono: user.telefono || "",
+      role: user.role || user.rol || "",
+    });
+  };
+
   const toggleStatus = async (id) => {
     try {
       await dispatch(updateStatusProduct(id)).unwrap();
@@ -174,6 +270,16 @@ const Dashboard = () => {
       fetchAdminProducts();
     } catch (error) {
       alert.error(error || "No se pudo actualizar el estado del producto");
+    }
+  };
+
+  const toggleUserStatus = async (id) => {
+    try {
+      await dispatch(updateAdminStatusUser(id)).unwrap();
+      alert.success("Estado del usuario actualizado");
+      fetchUsers();
+    } catch (error) {
+      alert.error(error || "No se pudo actualizar el estado del usuario");
     }
   };
 
@@ -397,6 +503,199 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderUsersSection = () => (
+    <div className="maintenance-content">
+      <h2 className="dashboard-title">Mantenimiento de Usuarios</h2>
+      <p className="dashboard-subtitle">Edita y cambia el estado de los usuarios desde esta pantalla.</p>
+
+      <div className="product-maintenance-grid">
+        <form className="product-maintenance-form" onSubmit={submitUserHandler}>
+          <h5>{isEditingUser ? "Editar usuario" : "Selecciona un usuario"}</h5>
+
+          <div className="form-row-grid">
+            <div className="form-group">
+              <label htmlFor="nombreUsuario">Nombre</label>
+              <input
+                id="nombreUsuario"
+                name="nombre"
+                type="text"
+                className="form-control"
+                value={userData.nombre}
+                onChange={onUserFieldChange}
+                disabled={!isEditingUser}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="apellidoUsuario">Apellido</label>
+              <input
+                id="apellidoUsuario"
+                name="apellido"
+                type="text"
+                className="form-control"
+                value={userData.apellido}
+                onChange={onUserFieldChange}
+                disabled={!isEditingUser}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row-grid">
+            <div className="form-group">
+              <label htmlFor="telefonoUsuario">Teléfono</label>
+              <input
+                id="telefonoUsuario"
+                name="telefono"
+                type="text"
+                className="form-control"
+                value={userData.telefono}
+                onChange={onUserFieldChange}
+                disabled={!isEditingUser}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="rolUsuario">Rol</label>
+              <select
+                id="rolUsuario"
+                name="role"
+                className="form-control"
+                value={userData.role}
+                onChange={onUserFieldChange}
+                disabled={!isEditingUser}
+                required
+              >
+                <option value="">Selecciona un rol</option>
+                {roles.map((roleName) => (
+                  <option key={roleName} value={roleName}>
+                    {roleName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="product-form-actions">
+            <button type="submit" className="btn btn-warning mt-2" disabled={!isEditingUser || submittingUsers}>
+              {submittingUsers ? "Guardando..." : "Actualizar Usuario"}
+            </button>
+            {isEditingUser && (
+              <button type="button" className="btn btn-secondary mt-2" onClick={resetUserForm}>
+                Cancelar edición
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div className="product-admin-list">
+          <div className="product-admin-list-header users-toolbar">
+            <h5>Listado administrativo</h5>
+            <div className="users-actions-inline">
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Buscar usuario..."
+                value={userSearch}
+                onChange={(event) => {
+                  setUserSearch(event.target.value);
+                  setUserPageIndex(1);
+                }}
+              />
+              <button type="button" className="btn btn-outline-warning btn-sm" onClick={fetchUsers}>
+                Buscar
+              </button>
+              <button type="button" className="btn btn-outline-warning btn-sm" onClick={fetchRoles}>
+                Roles
+              </button>
+              <button type="button" className="btn btn-outline-warning btn-sm" onClick={fetchUsers}>
+                Recargar
+              </button>
+            </div>
+          </div>
+
+          {loadingUsers ? (
+            <p>Cargando usuarios...</p>
+          ) : (
+            <>
+              <div className="table-responsive">
+                <table className="table table-sm product-admin-table">
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Nombre</th>
+                      <th>Apellido</th>
+                      <th>Teléfono</th>
+                      <th>Rol</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => {
+                      const statusValue = user.isActive === true
+                                        ? "Activo" 
+                                        : user.isActive === false
+                                          ? "No Activo" 
+                                          : "N/A";
+
+                      return (
+                        <tr key={user.id}>
+                    
+                          <td>{user.username || user.userName || "-"}</td>
+                          <td>{user.nombre}</td>
+                          <td>{user.apellido}</td>
+                          <td>{user.telefono}</td>
+                          <td>{user.role || user.rol}</td>
+                          <td>{statusValue}</td>
+                          <td className="product-admin-actions">
+                            <button type="button" className="btn btn-outline-info btn-sm" onClick={() => editUser(user)}>
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() => toggleUserStatus(user.id)}
+                            >
+                              Cambiar estado
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="product-pagination-actions">
+                <button
+                  type="button"
+                  className="btn btn-sm theme-nav-btn"
+                  onClick={() => setUserPageIndex((prev) => Math.max(prev - 1, 1))}
+                  disabled={userPageIndex <= 1}
+                >
+                  Anterior
+                </button>
+                <span>Página {userPageIndex}</span>
+                <button
+                  type="button"
+                  className="btn btn-sm theme-nav-btn"
+                  onClick={() => setUserPageIndex((prev) => prev + 1)}
+                  disabled={users.length === 0}
+                >
+                  Siguiente
+                </button>
+                <span>Total: {userTotalItems}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderReviewsSection = () => (
     <div className="maintenance-content">
       <h2 className="dashboard-title">Mantenimiento de Reviews</h2>
@@ -480,6 +779,10 @@ const Dashboard = () => {
   const renderSectionContent = () => {
     if (activeSection === "Products") {
       return renderProductsSection();
+    }
+
+    if (activeSection === "Usuarios") {
+      return renderUsersSection();
     }
 
     if (activeSection === "Reviews") {

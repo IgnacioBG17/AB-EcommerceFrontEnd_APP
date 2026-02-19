@@ -1162,3 +1162,19 @@ body.dark-theme .product-form-actions .btn-secondary {
 .reviews-full-width {
   grid-column: 1 / -1;
 }
+
+.users-toolbar {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.users-actions-inline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.users-actions-inline .form-control {
+  min-width: 180px;
+}

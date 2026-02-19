@@ -8,6 +8,7 @@ import { contryReducer } from "./slices/countrySlice";
 import { orderReducer } from "./slices/orderSlice";
 import { productMaintenanceReducer } from "./slices/productMaintenanceSlice";
 import { reviewMaintenanceReducer } from "./slices/reviewMaintenanceSlice";
+import { userMaintenanceReducer } from "./slices/userMaintenanceSlice";
 
 export default configureStore({
     reducer:{
@@ -19,7 +20,8 @@ export default configureStore({
         cart: cartReducer,
         country: contryReducer,
         order: orderReducer,
-        reviewMaintenance: reviewMaintenanceReducer
+        reviewMaintenance: reviewMaintenanceReducer,
+        userMaintenance: userMaintenanceReducer
     },
     middleware: (GetDefaultMiddleware) => GetDefaultMiddleware({serializableCheck: false})
 })
