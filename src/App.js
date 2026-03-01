@@ -45,7 +45,6 @@ const AppLayout = ({ toggleTheme, theme }) => {
           <Route path="/password/forgot" element={<ForgotPassword />} />
           <Route path="/password/reset/:token" element={<NewPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
-
           <Route exact path="/me" element={<ProtectedRoute />}>
             <Route path="/me" element={<Profile />} />
           </Route>

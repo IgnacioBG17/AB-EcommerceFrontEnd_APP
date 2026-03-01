@@ -83,3 +83,35 @@ export const fetchOrderById = createAsyncThunk(
     }
   }
 );
+
+export const fetchAllOrders = createAsyncThunk(
+  "order/fetchAllOrders",
+  async (params, { rejectWithValue }) => {
+    try {
+      const queryParams = httpParams(params || {});
+      const paramUrl = new URLSearchParams(queryParams).toString();
+      const endpoint = paramUrl
+        ? `/api/v1/order/paginationAdmin?${paramUrl}`
+        : "/api/v1/order/paginationAdmin";
+
+      const { data } = await axios.get(endpoint);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.message || "No se pudieron obtener las órdenes");
+    }
+  }
+);
+
+export const updateOrderStatus = createAsyncThunk(
+  "order/updateOrderStatus",
+  async ({ orderId, status }, { rejectWithValue }) => {
+
+    try {
+      const { data } = await axios.put(`/api/v1/order`, { orderId, status });
+      return data;
+    } catch (err) {
+      return rejectWithValue(err?.response?.data?.message || "No se pudo actualizar el estado de la orden");
+    }
+  }
+);
+

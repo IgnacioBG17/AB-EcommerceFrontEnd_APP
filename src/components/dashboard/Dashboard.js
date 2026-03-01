@@ -8,6 +8,7 @@ import {
   updateStatusProduct,
 } from "../../actions/productsAction";
 import { deleteReview, getPaginationReviews } from "../../actions/reviewAction";
+import { fetchAllOrders, updateOrderStatus } from "../../actions/orderAction";
 import {
   getPaginationUsersAdmin,
   getRolesList,
@@ -37,6 +38,27 @@ const initialUserData = {
   role: "",
 };
 
+const resolveOrderBadgeClass = (statusLabel) => {
+  const normalized = String(statusLabel || "").toLowerCase();
+
+  if (normalized.includes("entreg")) return "bg-success";
+  if (normalized.includes("pend")) return "bg-warning text-dark";
+  if (normalized.includes("cancel")) return "bg-danger";
+  if (normalized.includes("proce") || normalized.includes("env")) return "bg-info text-dark";
+
+  return "bg-secondary";
+};
+
+const normalizeOrdersPagination = (payload) => {
+  const count = payload?.count || payload?.Count || 0;
+  const pageIndex = payload?.pageIndex || payload?.PageIndex || 1;
+  const pageCount = payload?.pageCount || payload?.PageCount || 0;
+  const sourceData = payload?.data || payload?.Data || [];
+  const data = Array.isArray(sourceData) ? sourceData : sourceData?.$values || [];
+
+  return { count, pageIndex, pageCount, data };
+};
+
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("Dashboard");
   const [submitting, setSubmitting] = useState(false);
@@ -48,6 +70,14 @@ const Dashboard = () => {
   const [userPageIndex, setUserPageIndex] = useState(1);
   const [userSearch, setUserSearch] = useState("");
   const [userData, setUserData] = useState(initialUserData);
+  const [orderPageIndex, setOrderPageIndex] = useState(1);
+  const [orderFilters, setOrderFilters] = useState({ id: "", userName: "" });
+  const [adminOrders, setAdminOrders] = useState([]);
+  const [orderTotalItems, setOrderTotalItems] = useState(0);
+  const [orderPageCount, setOrderPageCount] = useState(0);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
+  const [statusDrafts, setStatusDrafts] = useState({});
 
   const dispatch = useDispatch();
   const alert = useAlert();
@@ -106,6 +136,29 @@ const Dashboard = () => {
     }
   }, [alert, dispatch, userPageIndex, userSearch]);
 
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoadingOrders(true);
+      const payload = await dispatch(
+        fetchAllOrders({
+          pageIndex: orderPageIndex,
+          pageSize: 8,
+          id: orderFilters.id ? Number(orderFilters.id) : null,
+          userName: orderFilters.userName?.trim() || null,
+        })
+      ).unwrap();
+
+      const normalized = normalizeOrdersPagination(payload);
+      setAdminOrders(normalized.data);
+      setOrderTotalItems(normalized.count);
+      setOrderPageCount(normalized.pageCount);
+    } catch (error) {
+      alert.error(error || "No se pudo cargar el listado de órdenes");
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [alert, dispatch, orderFilters.id, orderFilters.userName, orderPageIndex]);
+
   const fetchRoles = useCallback(async () => {
     try {
       await dispatch(getRolesList()).unwrap();
@@ -115,7 +168,7 @@ const Dashboard = () => {
   }, [alert, dispatch]);
 
   useEffect(() => {
-    if (activeSection === "Products") {
+    if (activeSection === "Productos") {
       fetchAdminProducts();
     }
     if (activeSection === "Reviews") {
@@ -125,7 +178,10 @@ const Dashboard = () => {
       fetchUsers();
       fetchRoles();
     }
-  }, [activeSection, fetchAdminProducts, fetchReviews, fetchUsers, fetchRoles]);
+    if (activeSection === "Ordenes") {
+      fetchOrders();
+    }
+  }, [activeSection, fetchAdminProducts, fetchReviews, fetchUsers, fetchRoles, fetchOrders]);
 
   const onProductFieldChange = (event) => {
     const { name, value, files } = event.target;
@@ -292,6 +348,185 @@ const Dashboard = () => {
       alert.error(error || "No se pudo eliminar el review");
     }
   };
+
+  const onOrderFilterChange = (event) => {
+    const { name, value } = event.target;
+    setOrderFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onApplyOrderFilters = async (event) => {
+    event.preventDefault();
+    setOrderPageIndex(1);
+    try {
+      const payload = await dispatch(
+        fetchAllOrders({
+          pageIndex: 1,
+          pageSize: 8,
+          id: orderFilters.id ? Number(orderFilters.id) : null,
+          userName: orderFilters.userName?.trim() || null,
+        })
+      ).unwrap();
+      const normalized = normalizeOrdersPagination(payload);
+      setAdminOrders(normalized.data);
+      setOrderTotalItems(normalized.count);
+      setOrderPageCount(normalized.pageCount);
+    } catch (error) {
+      alert.error(error || "No se pudieron aplicar los filtros");
+    }
+  };
+
+  const onOrderStatusChange = (orderId, status) => {
+    setStatusDrafts((prev) => ({ ...prev, [orderId]: status }));
+  };
+
+  const onUpdateOrder = async (orderId, currentStatus) => {
+    const status = statusDrafts[orderId] || currentStatus;
+    if (!status) {
+      alert.error("Selecciona un estado para actualizar");
+      return;
+    }
+
+    try {
+      setUpdatingOrderId(orderId);
+      await dispatch(updateOrderStatus({ orderId, status })).unwrap();
+      alert.success("Orden actualizada correctamente");
+      fetchOrders();
+    } catch (error) {
+      alert.error(error || "No se pudo actualizar la orden");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const renderOrdersSection = () => (
+    <div className="maintenance-content">
+      <h2 className="dashboard-title">Mantenimiento de Órdenes</h2>
+      <p className="dashboard-subtitle">Consulta y actualiza el estado de las órdenes.</p>
+
+          <h5>Filtros de órdenes</h5>
+          <label htmlFor="orderId">Número de orden</label>
+          <input
+            id="orderId"
+            name="id"
+            type="number"
+            className="form-control"
+            value={orderFilters.id}
+            onChange={onOrderFilterChange}
+            min="1"
+            placeholder="Ej: 1024"
+          />
+     
+        <div className="product-admin-list">
+          <div className="product-admin-list-header">
+            <h5>Listado administrativo</h5>
+            <button type="button" className="btn btn-outline-warning btn-sm" onClick={fetchOrders}>
+              Recargar
+            </button>
+          </div>
+
+          {loadingOrders ? (
+            <p>Cargando órdenes...</p>
+          ) : (
+            <>
+              <div className="table-responsive">
+                <table className="table table-sm product-admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Nombre Comprador</th>
+                      <th>Fecha Creación</th>
+                      <th>Estado</th>
+                      <th>Total</th>
+                      {/* <th>Método pago</th> */}
+                      <th>Actualizar estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminOrders.map((order) => {
+                      const orderId = order.id || order.Id;
+                      const statusValue = order.statusLabel || order.StatusLabel || order.status || order.Status || "Sin estado";
+                      const createdDate = order.createDate || order.createDate || order.fecha || order.Fecha;
+                      const userName = order.compradorNombre || order.compradorNombre || order.compradorNombre || order.compradorNombre || "-";
+                      const statusNumber = order.status ?? order.Status ?? 0;
+                      
+                      return (
+                        <tr key={orderId}>
+                          <td>#{orderId}</td>
+                          <td>{userName}</td>
+                          <td>{createdDate ? new Date(createdDate).toLocaleString() : "-"}</td>
+                          <td>
+                            <span className={`badge ${resolveOrderBadgeClass(statusValue)}`}>{statusValue}</span>
+                          </td>
+                          <td>${Number(order.total || order.Total || 0).toFixed(2)}</td>
+                          {/* <td>{order.paymentMethod || order.PaymentMethod || "-"}</td> */}
+                          <td>
+                            <div className="d-flex gap-2">
+                              <select
+                                  className="form-control form-control-sm"
+                                  value={
+                                    statusDrafts[orderId] !== undefined
+                                      ? statusDrafts[orderId]
+                                      : statusNumber
+                                  }
+                                  onChange={(event) =>
+                                    onOrderStatusChange(orderId, Number(event.target.value))
+                                  }
+                                >
+                                  <option value={0}>Pendiente</option>
+                                  <option value={1}>Completado</option>
+                                  <option value={2}>Enviado</option>
+                                  <option value={3}>Error</option>
+                                </select>
+                              <button
+                                type="button"
+                                className="btn btn-outline-info btn-sm"
+                                onClick={() =>
+                                  onUpdateOrder(
+                                    orderId,
+                                    statusDrafts[orderId] !== undefined
+                                      ? statusDrafts[orderId]
+                                      : statusNumber
+                                  )
+                                }
+                                disabled={updatingOrderId === orderId}
+                              >
+                                {updatingOrderId === orderId ? "Guardando..." : "Guardar"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="product-pagination-actions">
+                <button
+                  type="button"
+                  className="btn btn-sm theme-nav-btn"
+                  onClick={() => setOrderPageIndex((prev) => Math.max(prev - 1, 1))}
+                  disabled={orderPageIndex <= 1}
+                >
+                  Anterior
+                </button>
+                <span>Página {orderPageIndex}{orderPageCount > 0 ? ` de ${orderPageCount}` : ""}</span>
+                <button
+                  type="button"
+                  className="btn btn-sm theme-nav-btn"
+                  onClick={() => setOrderPageIndex((prev) => prev + 1)}
+                  disabled={orderPageCount > 0 && orderPageIndex >= orderPageCount}
+                >
+                  Siguiente
+                </button>
+                <span>Total: {orderTotalItems}</span>
+              </div>
+            </>
+          )}
+        </div>
+   
+    </div>
+  );
 
   const renderProductsSection = () => (
     <div className="maintenance-content">
@@ -777,7 +1012,11 @@ const Dashboard = () => {
   );
 
   const renderSectionContent = () => {
-    if (activeSection === "Products") {
+    if (activeSection === "Ordenes") {
+      return renderOrdersSection();
+    }
+
+    if (activeSection === "Productos") {
       return renderProductsSection();
     }
 
