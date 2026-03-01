@@ -15,7 +15,7 @@ import {
   updateAdminUser,
 } from "../../actions/userAction";
 
-const sectionOptions = ["Dashboard", "Products", "Ordenes", "Usuarios", "Reviews"];
+const sectionOptions = ["Dashboard", "Productos", "Ordenes", "Usuarios", "Reviews"];
 
 const initialProductData = {
   id: "",

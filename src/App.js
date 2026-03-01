@@ -25,6 +25,8 @@ import Wrapper from "./components/cart/Payment";
 import OrderSuccess from "./components/cart/OrderSuccess";
 import { useTheme } from "./hooks/useTheme";
 import Dashboard from "./components/dashboard/Dashboard";
+import MyOrdersPage from "./components/orders/MyOrdersPage.js";
+import OrderDetailPage from "./components/orders/OrderDetailPage.js";
 
 const AppLayout = ({ toggleTheme, theme }) => {
   const location = useLocation();
@@ -70,6 +72,12 @@ const AppLayout = ({ toggleTheme, theme }) => {
 
           <Route exact path="/success" element={<OrderSuccess />}>
             <Route path="/success" element={<OrderSuccess />} />
+          </Route>
+
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/my-orders" element={<MyOrdersPage />} />
+            <Route path="/my-orders/:id" element={<OrderDetailPage />} />
           </Route>
         </Routes>
       </div>

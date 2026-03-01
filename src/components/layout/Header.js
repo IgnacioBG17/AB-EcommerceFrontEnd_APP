@@ -84,14 +84,14 @@ const Header = ({ onToggleTheme, currentTheme }) => {
                 className="dropdown-menu"
                 aria-labelledby="dropdownMenuButton"
               >
-                {user && user.roles.includes("ADMIN") && (
+                {user?.roles?.includes("ADMIN") && (
                   <Link className="dropdown-item" to="/dashboard">
                     Dashboard
                   </Link>
                 )}
 
-                <Link className="dropdown-item" to="/orders/me">
-                  Ordenes
+                <Link className="dropdown-item" to="/my-orders">
+                  Mis Compras
                 </Link>
 
                 <Link className="dropdown-item" to="/me">
@@ -99,7 +99,7 @@ const Header = ({ onToggleTheme, currentTheme }) => {
                 </Link>
 
                 <Link className="dropdown-item" to="/" onClick={logoutHandler}>
-                  Logout
+                  Cerrar sesión 
                 </Link>
               </div>
             </div>

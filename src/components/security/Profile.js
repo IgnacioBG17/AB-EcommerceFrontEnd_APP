@@ -48,8 +48,8 @@ const Profile = () => {
           <p>{user && user.email}</p>
 
           {user && !user.roles.includes("ADMIN") && (
-            <Link className="btn btn-danger btn-block mt-5" to="/orders/me">
-              Mis Ordenes
+            <Link className="btn btn-danger btn-block mt-5" to="/my-orders">
+              Mis Compras
             </Link>
           )}
 
