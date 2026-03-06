@@ -44,7 +44,9 @@ const AppLayout = ({ toggleTheme, theme }) => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/password/forgot" element={<ForgotPassword />} />
           <Route path="/password/reset/:token" element={<NewPassword />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route element={<ProtectedRoute existsRoles={["ADMIN"]} />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
           <Route exact path="/me" element={<ProtectedRoute />}>
             <Route path="/me" element={<Profile />} />
           </Route>
@@ -72,7 +74,6 @@ const AppLayout = ({ toggleTheme, theme }) => {
           <Route exact path="/success" element={<OrderSuccess />}>
             <Route path="/success" element={<OrderSuccess />} />
           </Route>
-
 
           <Route element={<ProtectedRoute />}>
             <Route path="/my-orders" element={<MyOrdersPage />} />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Col, Fade, Row, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useAlert } from "react-alert";
 import {
@@ -15,6 +16,20 @@ import {
   updateAdminStatusUser,
   updateAdminUser,
 } from "../../actions/userAction";
+import {
+  fetchDashboardSummary,
+  fetchSalesByCategory,
+  fetchSalesByMonth,
+  fetchTopProducts,
+} from "../../actions/dashboardAction";
+import { clearDashboardError } from "../../slices/dashboardSlice";
+import DateFilter from "./DateFilter";
+import SalesByCategoryChart from "./SalesByCategoryChart";
+import SalesLineChart from "./SalesLineChart";
+import SkeletonCards from "./SkeletonCards";
+import SummaryCards from "./SummaryCards";
+import TopProductsChart from "./TopProductsChart";
+import "./dashboard.css";
 
 const sectionOptions = ["Dashboard", "Productos", "Ordenes", "Usuarios", "Reviews"];
 
@@ -61,6 +76,7 @@ const normalizeOrdersPagination = (payload) => {
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("Dashboard");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [productData, setProductData] = useState(initialProductData);
   const [pageIndex, setPageIndex] = useState(1);
@@ -100,6 +116,17 @@ const Dashboard = () => {
     count: userTotalItems,
     roles,
   } = useSelector((state) => state.userMaintenance);
+  const {
+    summary,
+    salesByMonth,
+    topProducts,
+    salesByCategory,
+    loadingSummary,
+    loadingCharts,
+    startDate,
+    endDate,
+    error: dashboardError,
+  } = useSelector((state) => state.dashboard);
 
   const isEditing = useMemo(() => Boolean(productData.id), [productData.id]);
   const isEditingUser = useMemo(() => Boolean(userData.id), [userData.id]);
@@ -167,7 +194,18 @@ const Dashboard = () => {
     }
   }, [alert, dispatch]);
 
+  const loadDashboardCharts = useCallback(() => {
+    const params = { startDate, endDate };
+    dispatch(fetchDashboardSummary(params));
+    dispatch(fetchSalesByMonth(params));
+    dispatch(fetchTopProducts(params));
+    dispatch(fetchSalesByCategory(params));
+  }, [dispatch, endDate, startDate]);
+
   useEffect(() => {
+    if (activeSection === "Dashboard") {
+      loadDashboardCharts();
+    }
     if (activeSection === "Productos") {
       fetchAdminProducts();
     }
@@ -181,7 +219,7 @@ const Dashboard = () => {
     if (activeSection === "Ordenes") {
       fetchOrders();
     }
-  }, [activeSection, fetchAdminProducts, fetchReviews, fetchUsers, fetchRoles, fetchOrders]);
+  }, [activeSection, fetchAdminProducts, fetchReviews, fetchUsers, fetchRoles, fetchOrders, loadDashboardCharts]);
 
   const onProductFieldChange = (event) => {
     const { name, value, files } = event.target;
@@ -352,27 +390,6 @@ const Dashboard = () => {
   const onOrderFilterChange = (event) => {
     const { name, value } = event.target;
     setOrderFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onApplyOrderFilters = async (event) => {
-    event.preventDefault();
-    setOrderPageIndex(1);
-    try {
-      const payload = await dispatch(
-        fetchAllOrders({
-          pageIndex: 1,
-          pageSize: 8,
-          id: orderFilters.id ? Number(orderFilters.id) : null,
-          userName: orderFilters.userName?.trim() || null,
-        })
-      ).unwrap();
-      const normalized = normalizeOrdersPagination(payload);
-      setAdminOrders(normalized.data);
-      setOrderTotalItems(normalized.count);
-      setOrderPageCount(normalized.pageCount);
-    } catch (error) {
-      alert.error(error || "No se pudieron aplicar los filtros");
-    }
   };
 
   const onOrderStatusChange = (orderId, status) => {
@@ -1011,6 +1028,98 @@ const Dashboard = () => {
     </div>
   );
 
+  const transformedSalesByMonth = useMemo(() => {
+    return (salesByMonth || []).map((item, index) => ({
+      label: item?.month || `Mes ${index + 1}`, 
+      value: Number(item?.total || item?.totalSales || 0),
+    }));
+  }, [salesByMonth]);
+
+  const transformedTopProducts = useMemo(
+    () =>
+      (topProducts || []).map((item, index) => ({
+        label:
+          item?.name ||
+          item?.nombre ||
+          item?.productName ||
+          item?.producto ||
+          `Producto ${index + 1}`,
+        value: Number(item?.totalSales ?? item?.cantidadVendida ?? item?.sales ?? item?.value ?? 0),
+      })),
+    [topProducts]
+  );
+
+  const transformedSalesByCategory = useMemo(
+  () =>
+    (salesByCategory || []).map((item, index) => {
+      return {
+        label:
+          item?.category ||
+          item?.categoria ||
+          item?.name ||
+          item?.label ||
+          `Categoría ${index + 1}`,
+        value: Number(item?.cantidadVendida ?? item?.sales ?? item?.value ?? 0),
+      };
+    }),
+  [salesByCategory]
+);
+
+  const renderDashboardSection = () => (
+    <div className="maintenance-content">
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h2 className="dashboard-title">Dashboard</h2>
+          <p className="dashboard-subtitle mb-0">Resumen de métricas administrativas.</p>
+        </div>
+      </div>
+
+      <DateFilter onRefresh={loadDashboardCharts} />
+
+      {dashboardError && (
+        <Alert variant="danger" dismissible onClose={() => dispatch(clearDashboardError())}>
+          {dashboardError}
+        </Alert>
+      )}
+
+      {loadingSummary ? <SkeletonCards /> : <SummaryCards summary={summary} />}
+
+      {loadingCharts && (
+        <div className="dashboard-global-spinner text-center my-3">
+          <Spinner animation="border" variant="warning" />
+          <p className="mb-0 mt-2">Cargando gráficas...</p>
+        </div>
+      )}
+
+      <Row className="g-3 mt-1">
+        <Col lg={6}>
+          <Fade in timeout={400}>
+            <div>
+              <SalesLineChart data={transformedSalesByMonth} loading={loadingCharts} />
+            </div>
+          </Fade>
+        </Col>
+        <Col lg={6}>
+          <Fade in timeout={500}>
+            <div>
+              <SalesByCategoryChart data={transformedSalesByCategory} loading={loadingCharts} />
+            </div>
+          </Fade>
+        </Col>
+      </Row>
+
+      <Row className="g-3 mt-1">
+        <Col>
+          <Fade in timeout={600}>
+            <div>
+              <TopProductsChart data={transformedTopProducts} loading={loadingCharts} />
+            </div>
+          </Fade>
+        </Col>
+      </Row>
+    </div>
+  );
+
   const renderSectionContent = () => {
     if (activeSection === "Ordenes") {
       return renderOrdersSection();
@@ -1028,17 +1137,12 @@ const Dashboard = () => {
       return renderReviewsSection();
     }
 
-    return (
-      <div>
-        <h2 className="dashboard-title">{activeSection}</h2>
-        <p className="dashboard-subtitle">Selecciona una opción del menú para administrar la tienda.</p>
-      </div>
-    );
+    return renderDashboardSection();
   };
 
   return (
     <section className="dashboard-fullscreen">
-      <div className="dashboard-layout">
+      <div className={`dashboard-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <aside className="dashboard-sidebar">
           <h3>Panel</h3>
           <div className="dashboard-menu-wrapper">
@@ -1055,7 +1159,18 @@ const Dashboard = () => {
           </div>
         </aside>
 
-        <article className="dashboard-main-panel">{renderSectionContent()}</article>
+        <article className="dashboard-main-panel">
+          <button
+            type="button"
+            className="btn btn-sm dashboard-sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+            aria-label={isSidebarCollapsed ? "Mostrar panel" : "Ocultar panel"}
+            title={isSidebarCollapsed ? "Mostrar panel" : "Ocultar panel"}
+          >
+            ☰
+          </button>
+          {renderSectionContent()}
+        </article>
       </div>
     </section>
   );

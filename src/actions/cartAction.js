@@ -30,14 +30,20 @@ export const saveAddressInfo = createAsyncThunk(
 //  pueda acceder al contenido del carrito.
 export const getShoppingCart = createAsyncThunk(
   "shoppingCart/GetById",
-  async({rejectWithValue}) => {
+  async (_, { rejectWithValue }) => {
     try {
-        
-        const shoppingCartId = localStorage.getItem("shoppingCartId") ?? '00000000-0000-0000-0000-000000000000';
-        const { data } = await axios.get(`/api/v1/ShoppingCart/${shoppingCartId}`);
-        return data;
+
+      const localId = localStorage.getItem("shoppingCartId");
+      const defaultId = '00000000-0000-0000-0000-000000000000';
+      const shoppingCartId = (localId && localId !== "undefined") ? localId : defaultId;
+
+      const { data } = await axios.get(`/api/v1/ShoppingCart/${shoppingCartId}`);
+      return data;
+
     } catch (err) {
-        return rejectWithValue(err.response.data.message);
+      // Manejo de error más robusto
+      const message = err.response?.data?.message || err.message || "Error desconocido";
+      return rejectWithValue(message);
     }
   }
 );

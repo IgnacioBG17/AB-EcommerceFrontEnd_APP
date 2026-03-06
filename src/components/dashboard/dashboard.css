@@ -1,0 +1,43 @@
+.kpi-card,
+.chart-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpi-card:hover,
+.chart-card:hover {
+  transform: translateY(-4px);
+}
+
+.chart-svg {
+  min-height: 220px;
+  color: #f59e0b;
+}
+
+.pie-svg {
+  min-height: 220px;
+}
+
+.bar-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  transition: width 0.45s ease;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+body.dark-theme .bar-track {
+  background: #334155;
+}
